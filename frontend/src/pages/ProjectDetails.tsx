@@ -1,0 +1,15 @@
+import { useEffect,useState } from "react";
+import { Link,useParams } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { getProject } from "../services/projectService";
+import type { Project } from "../types/Project";
+import { ArrowLeft, Github, ExternalLink } from "lucide-react";
+
+export default function ProjectDetails(){
+  const {id}=useParams(); const [p,setP]=useState<Project|null>(null);
+  useEffect(()=>{if(id)getProject(Number(id)).then(setP).catch(console.error)},[id]);
+  if(!p)return <><Navbar/><main className="mx-auto max-w-4xl px-5 py-24"><p className="text-slate-400">Loading project...</p></main></>;
+  const features=["RESTful API development","Authentication and authorization","Database integration with JPA/Hibernate","Validation and centralized exception handling","Clean Controller-Service-Repository structure"];
+  return <><Navbar/><main className="mx-auto max-w-5xl px-5 py-16"><Link to="/projects" className="text-sm text-sky-400"><ArrowLeft className="mr-1 inline" size={15}/>Back to projects</Link><div className="mt-8 overflow-hidden rounded-2xl border border-white/10">{p.imageUrl?<img src={p.imageUrl} className="max-h-[420px] w-full object-cover" alt={p.title}/>:<div className="flex h-64 items-center justify-center bg-gradient-to-br from-sky-950 to-indigo-950 text-7xl font-black text-white/10">{p.title.charAt(0)}</div>}</div><p className="mt-10 text-sm font-semibold uppercase tracking-widest text-sky-400">{p.category}</p><h1 className="mt-2 text-4xl font-black text-white md:text-5xl">{p.title}</h1><p className="mt-5 text-lg leading-8 text-slate-400">{p.description}</p><div className="mt-7 flex flex-wrap gap-3">{p.technologies.split(",").map(t=><span key={t} className="rounded-full border border-white/10 px-3 py-1.5 text-sm text-slate-300">{t.trim()}</span>)}</div><div className="mt-8 flex gap-3">{p.githubUrl&&p.githubUrl!=="#"&&<a href={p.githubUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-sky-500 px-4 py-2 font-semibold text-slate-950"><Github className="mr-2 inline" size={17}/>GitHub</a>}{p.liveUrl&&p.liveUrl!=="#"&&<a href={p.liveUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-white/10 px-4 py-2"><ExternalLink className="mr-2 inline" size={17}/>Live Demo</a>}</div><div className="mt-14 grid gap-8 md:grid-cols-2"><section className="rounded-2xl border border-white/10 bg-white/[0.03] p-7"><h2 className="text-xl font-bold text-white">Key Features</h2><ul className="mt-5 list-disc space-y-3 pl-5 text-slate-400">{features.map(f=><li key={f}>{f}</li>)}</ul></section><section className="rounded-2xl border border-white/10 bg-white/[0.03] p-7"><h2 className="text-xl font-bold text-white">My Contribution</h2><p className="mt-5 leading-7 text-slate-400">Designed and implemented backend functionality, API integration, data persistence and application features using the technologies listed above.</p></section></div></main><Footer/></>;
+}
