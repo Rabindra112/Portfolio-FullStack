@@ -20,8 +20,9 @@ import api from "../services/api";
 
 export default function Home() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     getProjects().then(setProjects).catch(console.error);
@@ -32,7 +33,7 @@ export default function Home() {
     try {
       await api.post("/contact", form);
       setSent(true);
-      setForm({ name: "", email: "", message: "" });
+      setForm({ name: "", email: "", subject: "", message: "" });
     } catch {
       alert("Backend is not running or the request failed.");
     }
@@ -456,64 +457,127 @@ export default function Home() {
             </div>
           </div>
         </section>
+{/* CONTACT */}
+<section
+  id="contact"
+  className="border-t border-white/10 bg-white/[0.02]"
+>
+  <div className="mx-auto grid max-w-7xl gap-12 px-5 py-24 md:grid-cols-2 md:py-28 lg:px-8">
+    
+    {/* Contact Information */}
+    <div>
+      <SectionHeading
+        number="05"
+        label="Contact"
+        title="Let's connect"
+      />
 
-        {/* CONTACT */}
-        <section id="contact" className="border-t border-white/10 bg-white/[0.02]">
-          <div className="mx-auto grid max-w-7xl gap-12 px-5 py-24 md:grid-cols-2 md:py-28 lg:px-8">
-            <div>
-              <SectionHeading number="05" label="Contact" title="Let's connect" />
+      <p className="mt-7 max-w-xl text-base leading-8 text-slate-400 sm:text-lg">
+        Looking to connect about a Java Backend, Spring Boot, or Full Stack
+        opportunity? Feel free to reach out. I’d be happy to discuss
+        projects, opportunities, or potential collaborations.
+      </p>
 
-              <p className="mt-7 max-w-xl text-base leading-8 text-slate-400 sm:text-lg">
-                Interested in Java backend, Spring Boot or full-stack
-                opportunities? Send me a message.
-              </p>
+      <div className="mt-8 space-y-4">
+        <p className="text-slate-300">
+          <Mail
+            className="mr-3 inline text-sky-400"
+            size={18}
+          />
+          rabindrakrmahato1123@gmail.com
+        </p>
 
-              <p className="mt-7 text-slate-300">
-                <Mail className="mr-2 inline text-sky-400" size={18} />
-                rabindrakrmahato1123@gmail.com
-              </p>
-              <p className="mt-3 text-slate-300">
-                <MapPin className="mr-2 inline text-sky-400" size={18} />
-                Bangalore, India
-              </p>
-            </div>
+        <p className="text-slate-300">
+          <MapPin
+            className="mr-3 inline text-sky-400"
+            size={18}
+          />
+          Bangalore, India
+        </p>
+      </div>
+    </div>
 
-            <form onSubmit={submit} className="space-y-4">
-              {sent && (
-                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">
-                  Message sent successfully.
-                </div>
-              )}
+    {/* Contact Form */}
+    <form
+      onSubmit={submit}
+      className="space-y-4"
+    >
+      {/* Success Message */}
+      {sent && (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+          ✓ Message sent successfully. Thank you for reaching out!
+        </div>
+      )}
 
-              <input
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Your name"
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none transition focus:border-sky-400"
-              />
-              <input
-                required
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="Your email"
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none transition focus:border-sky-400"
-              />
-              <textarea
-                required
-                value={form.message}
-                onChange={(e) => setForm({ ...form, message: e.target.value })}
-                placeholder="Your message"
-                rows={5}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none transition focus:border-sky-400"
-              />
-              <button className="rounded-xl bg-sky-500 px-6 py-3 font-bold text-slate-950 transition hover:bg-sky-400">
-                Send Message
-              </button>
-            </form>
-          </div>
-        </section>
+      {/* Error Message */}
+      {error && (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+          {error}
+        </div>
+      )}
+
+      {/* Name */}
+      <input
+        required
+        type="text"
+        name="name"
+        value={form.name}
+        onChange={(e) =>
+          setForm({ ...form, name: e.target.value })
+        }
+        placeholder="Your name"
+        className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-5 py-4 text-white placeholder:text-slate-500 outline-none transition focus:border-sky-400 focus:bg-white/[0.07]"
+      />
+
+      {/* Email */}
+      <input
+        required
+        type="email"
+        name="email"
+        value={form.email}
+        onChange={(e) =>
+          setForm({ ...form, email: e.target.value })
+        }
+        placeholder="Your email"
+        className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-5 py-4 text-white placeholder:text-slate-500 outline-none transition focus:border-sky-400 focus:bg-white/[0.07]"
+      />
+
+      {/* Subject */}
+      <input
+        required
+        type="text"
+        name="subject"
+        value={form.subject}
+        onChange={(e) =>
+          setForm({ ...form, subject: e.target.value })
+        }
+        placeholder="Subject"
+        className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-5 py-4 text-white placeholder:text-slate-500 outline-none transition focus:border-sky-400 focus:bg-white/[0.07]"
+      />
+
+      {/* Message */}
+      <textarea
+        required
+        name="message"
+        value={form.message}
+        onChange={(e) =>
+          setForm({ ...form, message: e.target.value })
+        }
+        placeholder="Your message"
+        rows={6}
+        className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.05] px-5 py-4 text-white placeholder:text-slate-500 outline-none transition focus:border-sky-400 focus:bg-white/[0.07]"
+      />
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        className="rounded-xl bg-sky-500 px-7 py-3.5 font-bold text-slate-950 transition hover:bg-sky-400"
+      >
+        Send Message
+      </button>
+    </form>
+  </div>
+</section>
       </main>
 
       <Footer />
