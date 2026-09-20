@@ -1,6 +1,7 @@
 package com.rabindra.portfolio.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,6 +25,9 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
+    @Value("${frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -32,40 +36,76 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration) throws Exception {
+
         return configuration.getAuthenticationManager();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http) throws Exception {
 
         http
+                // JWT-based API, so CSRF is disabled.
                 .csrf(csrf -> csrf.disable())
 
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // CORS configuration.
+                .cors(cors ->
+                        cors.configurationSource(corsConfigurationSource()))
 
+                // No HTTP session; authentication is stateless.
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // Authentication endpoint is public.
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // ===============================
+                        // Authentication
+                        // ===============================
+                        .requestMatchers("/api/auth/**")
+                        .permitAll()
 
-                        // Public portfolio/project read APIs.
-                        .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
+                        // ===============================
+                        // Public Projects
+                        // ===============================
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/projects/**"
+                        ).permitAll()
 
-                        // Contact form is public.
-                        .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
+                        // ===============================
+                        // Public Contact Form
+                        // ===============================
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/contact"
+                        ).permitAll()
 
-                        // Project management requires a valid JWT.
-                        .requestMatchers(HttpMethod.POST, "/api/projects/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/projects/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/projects/**").authenticated()
+                        // ===============================
+                        // Admin Project Management
+                        // ===============================
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/projects/**"
+                        ).hasRole("ADMIN")
 
-                        // Everything else is public unless explicitly protected above.
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/projects/**"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/projects/**"
+                        ).hasRole("ADMIN")
+
+                        // ===============================
+                        // Everything else
+                        // ===============================
                         .anyRequest().permitAll()
                 )
 
+                // JWT authentication filter.
                 .addFilterBefore(
                         jwtAuthFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -76,18 +116,38 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        CorsConfiguration configuration =
+                new CorsConfiguration();
+
+        configuration.setAllowedOrigins(
+                List.of(frontendUrl)
+        );
+
         configuration.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        configuration.setAllowedHeaders(
+                List.of("*")
+        );
+
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
 
         return source;
     }
-}
+} 
